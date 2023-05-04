@@ -101,3 +101,7 @@ ___
 
 
 # External (public) sources
+- [Alphafold2 Structures, Human](https://alphafold.ebi.ac.uk/download#proteomes-section)
+- [Uniprot](https://www.uniprot.org/)
+- [Interpro](https://www.ebi.ac.uk/interpro/)
+- [Humsavar](https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/docs/humsavar.txt)
