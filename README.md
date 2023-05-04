@@ -100,16 +100,4 @@ ___
 
 
 
-## Command Line
-### Requirements for command line usage
-#### Python
-
-#### R
-
-
-
-
-
-
-
 # External (public) sources
