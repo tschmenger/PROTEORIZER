@@ -54,6 +54,52 @@ Examples:
 - **P61586/Y34C,E40K** 
 - **RHOA/Y34C**
 
+### Reviewing the results
+#### The Data Table
+
+<img src="explanation_datatable.png" alt = "Data Table Explanation" width = "800">|
+|:--:| 
+| *The data table.* |
+
+- 1: **Download button**: Download your results here.
+- 2: The **cluster number** of this particular entry. Datatable can be sorted accordingly.
+- 3: **Data Source**. Should be **Input**, **UniProt** (= information directly for the protein of interest) or **Orthos** (= information mapped to the protein of interest).
+- 4: **Position**, indicating the protein of interest residue number.
+- 5: **BAYES score**, values above 13 indicate a higher chance for the input position to be relevant for the function of the protein.
+- 6: **Sequence Identity** indicates how strongly the input protein amino acid is conserved across all sequences of the alignment.
+- 7: **Type Identity** indicates how strongly the input protein amino acid type is conserved across all sequences of the alignment.
+- 8: **Functional Information** directly shows the uniprot info that was extracted & used.
+- 9 (not shown): **Mechismo Information** refers to previous work of AG Russell, please see [Mechismo](mechismo.russelllab.org).
+
+___
+#### Clusters
+
+<img src="explanation_clusters.png" alt = "Cluster Explanation" width = "800">|
+|:--:| 
+| *Clusters* |
+
+This resultfile typically gives a representation of clusters detected for the protein of interest. The type of image will differ based on the cluster method selected.
+
+___
+#### Alignment Annotation
+
+<img src="explanation_alignment.png" alt = "Alignment Explanation" width = "800">|
+|:--:| 
+| *The annotated alignment* |
+
+- 1: Legend. Circles on the alignment follow the color categories based on entry types from UniProt.
+- 2: Protein features taken from Interpro.
+- 3: IDs for each sequence. Where possible UniprotIDs (from the input alignment) are translated into gene names.
+- 4: The shown starting position for each aligned sequence.
+- 5: Sequence conservation. Corresponds to sequence identity for this position of the alignment. **Note** Columns of the alignment are colored based on amino acid type if the amino acid type (of the protein of interest) is more than 70 % conserved at this position.
+- 6: Residue numbering for the protein of interest.
+- 7: Positions clustered together with the input position (here **34**) are displayed with the same color. A rectangle highlights the position of interest.
+- 8: The shown ending position for each aligned sequence.
+
+**Note**: IF multiple positions are given, then the complete alignment is annotated and shown. This might produce large .svg files. 
+
+
+
 ## Command Line
 ### Requirements for command line usage
 #### Python
