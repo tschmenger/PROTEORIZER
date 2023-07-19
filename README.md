@@ -14,7 +14,8 @@ Idea: If you know the function and effects of residues and mutations physically 
 
 We offer two different methods of how these clusters are defined ([Random Walk](https://igraph.org/r/doc/cluster_walktrap.html) and [Hierarchical Clustering](https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/hclust)).
 
-Several features were used to perform bayesian integration (see the paper [above](https://doi.org/10.1038/s41525-022-00322-z)). While **not being the main focus** of this approach we also provide scores based on the selected method. **Scores above 15** should be highlighting interesting cases.
+Several features were used to perform bayesian integration (see the paper [above](https://doi.org/10.1038/s41525-022-00322-z)). While **not being the main focus** of this approach we also provide scores based on the selected method. **Scores above 15** should be highlighting interesting cases. Additionally, we trained a predictor (via scikit-learn, using a Random Forest classifier) to decide on whether the available data suggests that a given mutation does have an impact on protein function. Scores between 0.5 - 1 indicate as such. 
+We hope that if both classifiers (Bayes & Random Forest) are positive (Bayes above 15 & Random Forest above 0.5) we can more safely conclude that the variant is likely to have an impact.
 
 The final results include the **functional and mapped-back information**, a **graphical representation of clusters** as well as an **annotated alignment**.
 
@@ -105,3 +106,4 @@ ___
 - [Uniprot](https://www.uniprot.org/)
 - [Interpro](https://www.ebi.ac.uk/interpro/)
 - [Humsavar](https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/docs/humsavar.txt)
+- [gnomAD](https://gnomad.broadinstitute.org/)
