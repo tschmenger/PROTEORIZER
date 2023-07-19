@@ -1,5 +1,5 @@
 # PROTEORIZER
-Proteorizer is an explorative tool that takes variants from laboratory or clinical settings and contextualizes the variants based on prior information from the protein of interest and similar proteins according to where these functional positions are located in the 3D structure of the protein of interest.
+[Proteorizer](shiny.russelllab.org/proteorizer) is an explorative tool that takes variants from laboratory or clinical settings and contextualizes the variants based on prior information from the protein of interest and similar proteins according to where these functional positions are located in the 3D structure of the protein of interest.
 <img src="https://github.com/tschmenger/PROTEORIZER/blob/4e16b172e6d920daf4007e048936df43805d1d30/GraphicalAbstract.svg?sanitize=true">
 
 # Please Cite
@@ -100,10 +100,12 @@ ___
 **Note**: IF multiple positions are given, then the complete alignment is annotated and shown. This might produce large .svg files. 
 
 
-
 # External (public) sources
 - [Alphafold2 Structures, Human](https://alphafold.ebi.ac.uk/download#proteomes-section)
 - [Uniprot](https://www.uniprot.org/)
 - [Interpro](https://www.ebi.ac.uk/interpro/)
 - [Humsavar](https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/docs/humsavar.txt)
 - [gnomAD](https://gnomad.broadinstitute.org/)
+
+# To-Do
+- improve stability
