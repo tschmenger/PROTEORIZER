@@ -1,12 +1,15 @@
 library(shiny)
 library(shinyjs)
 library(rmarkdown)
-library(gmailr)
+#library(gmailr)
 library(NGLVieweR)
 library(dplyr)
 library(shinycssloaders)
 library(htmltools)
 library(DT)
+library(stringr)
+library(shinyFeedback)
+
 ############# Working on the Input and Result Generation
 ###### This is to make the input easier
 idmapper <- read.delim("/net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoX/Lookups/Uniprot_GeneNames_Reviewed.tsv", header= T, sep = "\t", stringsAsFactors = FALSE)
@@ -21,14 +24,30 @@ uniprot_name <- setNames(col3_vals,col1_vals)
 
 
 server <- function(input, output, session) {
+  shinyjs::hide("filter")
   file_ready <- reactiveVal(FALSE)
   structure_ready <- reactiveVal(FALSE)
   resfile_paths <- reactiveVal()
+  alignmentpathway <- reactiveVal()
   
   observeEvent(input$example, {
     updateTextInput(session, "request",value="RHOA/Y34C")
   })
   
+  observeEvent(input$dataset_input, {
+    if (input$dataset_input == "Humsavar") {
+      showFeedbackWarning(
+        inputId = "dataset_input",
+        text = "No scoring can be provided since parts of this dataset were used for training."
+      )  
+    } else if (input$dataset_input == "Both") {
+      showFeedbackWarning(
+        inputId = "dataset_input",
+        text = "No scoring can be provided since parts of this dataset were used for training."
+      )} 
+    else {
+      hideFeedback("dataset_input")
+    }})
   
   observeEvent(input$submit, {
     ### reset file_ready to false
@@ -46,6 +65,7 @@ server <- function(input, output, session) {
     # Get user input
     request <- input$request
     option <- input$option_input
+    datensatz <- input$dataset_input
     filepathus <- input$file_input$datapath
     if (!is.null(filepathus)){
       timedate <- format(Sys.time(),"%Y%m%d_%H%M%S")
@@ -67,9 +87,12 @@ server <- function(input, output, session) {
     }
     write_input_to_file(request,option,filepathus)
     
-    ### Generate results and send per mail
     that_is_it <- list.files(path = "/net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/R_Shiny_Interface/User_Inputs")
     foldernumber <- length(that_is_it)
+    if (foldernumber > 100){
+      deletecommand <- "/home/bq_tschmenger/anaconda2/bin/python /net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/R_Shiny_Interface/CleanerOperation.py"
+      system(deletecommand)
+    }
     tryCatch({
       DF <- read.table(text = request, sep = "/", as.is = TRUE)
       raw_id <- toupper(DF[[1,1]])
@@ -107,14 +130,19 @@ server <- function(input, output, session) {
                               customfile_name,
                               sep = "")
       
-      cmd <- paste("/home/bq_tschmenger/anaconda2/bin/python /net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/STABLE_Proteorizer_alpha_20230502.py",uniprot,mutations,genename,"R_Submissions FALSE",customalignfile,"FALSE","FALSE",option,foldernumber, sep=" ")
+      cmd <- paste("/home/bq_tschmenger/anaconda2/bin/python /net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/STABLE_Proteorizer_alpha_20230719.py",uniprot,mutations,genename,"R_Submissions FALSE",customalignfile,"FALSE","FALSE",option,datensatz,foldernumber, sep=" ")
     }
     else {
-      cmd <- paste("/home/bq_tschmenger/anaconda2/bin/python /net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/STABLE_Proteorizer_alpha_20230502.py",uniprot,mutations,genename,"R_Submissions FALSE",filepathus,"FALSE","FALSE",option,foldernumber, sep=" ")
+      cmd <- paste("/home/bq_tschmenger/anaconda2/bin/python /net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/STABLE_Proteorizer_alpha_20230719.py",uniprot,mutations,genename,"R_Submissions FALSE",filepathus,"FALSE","FALSE",option,datensatz,foldernumber, sep=" ")
     }
     
     #cat(cmd)
-    system(cmd)
+    tryCatch({
+      system(cmd)},
+      error =function(e){
+        if (datensatz!="Uniprot"){
+          showModal(modalDialog("Not enough data available.", easyClose = F))  
+        }})  
     
     stringler <- paste(foldernumber,uniprot,genename,sep="-")
     correct_path <- file.path("/net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/PDB_Structures/R_Submissions",
@@ -125,18 +153,18 @@ server <- function(input, output, session) {
                                   "ClusterPlot_unlim.svg")},
       error = function(e){graphical_path=""})
     
-    tryCatch({    
-      alignment_first <- file.path(correct_path,
-                                   "AnnotatedAlignment_30.svg")},
-      error = function(e){alignment_first=""})
-    tryCatch({    
-      alignment_second <- file.path(correct_path,
-                                    "AnnotatedAlignment_50.svg")},
-      error = function(e){alignment_second=""})
-    tryCatch({    
-      alignment_third <- file.path(correct_path,
-                                   "AnnotatedAlignment_30000.svg")},
-      error = function(e){alignment_third=""})
+    tryCatch({  
+      if (length(grep(',', as.character(mutations)))){
+        alignment_first <- file.path(correct_path,
+                                     "AnnotatedAlignment_30000_15.svg")
+      }
+      else {
+        alignment_first <- file.path(correct_path,
+                                     "AnnotatedAlignment_30_15.svg")
+      }
+    },
+    error = function(e){alignment_first=""})
+    
     tryCatch({
       uniprotler_raw <- strsplit(stringler,"-")
       uniprotler <- uniprotler_raw[[1]][2]
@@ -159,13 +187,14 @@ server <- function(input, output, session) {
         error = function(e){resultfile=""}) 
     }
     resfile_paths(list(
+      uni_identifier = uniprot,
+      mutatoos = mutations,
+      onepathforall = correct_path,
       tablepath = resultfile,
       clusterspath = graphical_path,
       annotated = alignment_first,
-      annotated_zwei = alignment_second,
-      annotated_drei = alignment_third,
       strupath = realstrucpath))
-    
+    alignmentpathway(list(annotated = alignment_first))
     
     file_ready(TRUE)
     
@@ -173,18 +202,27 @@ server <- function(input, output, session) {
   
   observeEvent(file_ready(),{
     if (file_ready()){
-      updateSelectInput(session,"windowsize",choices=c("","30","50","Complete"))
-      ### preparing the table
-      theresultsfile <- read.delim(resfile_paths()$tablepath, header = T, sep ="\t", quote="")
-      betterorder <- c("Clusternumber","Data_Source","Position","BAYES","SeqIdent%","TypeIdent%","Functional_Information","Mechismo_Predictions")
-      colnames(theresultsfile)<- c("Clusternumber","Data_Source","Position","Functional_Information","Mechismo_Predictions","SeqIdent%","TypeIdent%","BAYES")
-      theresultsfile <- theresultsfile[, betterorder]
-      theresultsfile[, 'Clusternumber'] <- as.integer(theresultsfile[, 'Clusternumber'])
-      theresultsfile[, 'SeqIdent%'] <- as.integer(theresultsfile[, 'SeqIdent%'])
-      theresultsfile[, 'TypeIdent%'] <- as.integer(theresultsfile[, 'TypeIdent%'])
-      output$mytable1 <- renderDataTable(theresultsfile,
-                                         filter = list(position = 'bottom', clear = FALSE, plain = TRUE
-                                         ))
+      shinyjs::show("filter")
+      
+      tryCatch({      
+        ### preparing the table
+        theresultsfile <- read.delim(resfile_paths()$tablepath, header = T, sep ="\t", quote="")
+        #View(theresultsfile)
+        betterorder <- c("Clusternumber","Data_Source","Position","BAYES","Predictor","SeqIdent%","TypeIdent%","Functional_Information","COSMIC","gnomAD_Het","gnomAD_Hom","Mechismo_Predictions")
+        colnames(theresultsfile)<- c("Clusternumber","Data_Source","Position","Functional_Information","Mechismo_Predictions","SeqIdent%","TypeIdent%","BAYES","COSMIC","gnomAD_Het","gnomAD_Hom","Predictor")
+        theresultsfile <- theresultsfile[, betterorder]
+        #theresultsfile[, 'Clusternumber'] <- as.integer(theresultsfile[, 'Clusternumber'])
+        theresultsfile[, 'SeqIdent%'] <- as.integer(theresultsfile[, 'SeqIdent%'])
+        theresultsfile[, 'TypeIdent%'] <- as.integer(theresultsfile[, 'TypeIdent%'])
+        #View(theresultsfile)
+        
+        output$mytable1 <- renderDataTable(theresultsfile,
+                                           filter = list(position = 'top', clear = FALSE, plain = TRUE
+                                           ))
+        
+      },error =function(e){
+        showModal(modalDialog("Table Error!", "Tabular results could not be generated. Click & proceed to the remaining results.", easyClose = TRUE))  
+      })
       
       ### preparing the images
       tryCatch({
@@ -204,13 +242,13 @@ server <- function(input, output, session) {
         error =function(e){
           showModal(modalDialog("Plotting Error!", "Annotated alignment could not be generated. Click & proceed to the remaining results.", easyClose = TRUE))  
         })
-      
       output$download_alignment <- downloadHandler(
         filename = function() {
           paste("Alignment_",Sys.Date(),".svg",sep="")
         },
         content = function(file) {
-          svg_file_path <- resfile_paths()$annotated_drei
+          cat(alignmentpathway()$annotated)
+          svg_file_path <- alignmentpathway()$annotated
           svg_content <- readLines(svg_file_path)
           writeLines(svg_content,file)
         }
@@ -223,6 +261,7 @@ server <- function(input, output, session) {
           write.csv(theresultsfile, con)
         }
       )
+      
       ##### Bringing the structure to life here
       ## Initially generating the 3D structure
       if (nchar(resfile_paths()$strupath)>5){
@@ -240,36 +279,51 @@ server <- function(input, output, session) {
         structure_ready(TRUE)}
     }})
   
-  ### Selecting the alignment windowsizes
-  observeEvent(input$windowsize,{
-    if (as.character(input$windowsize) == "30"){
-      tryCatch({
-        output$image_2 <- renderUI({
-          HTML(htmltools::includeHTML(resfile_paths()$annotated))
-        })},
-        error =function(e){
-          showModal(modalDialog("Plotting Error!", "Annotated alignment could not be generated. Click & proceed to the remaining results.", easyClose = TRUE))  
-        })
-    }
-    else if (as.character(input$windowsize) == "50"){
-      tryCatch({
-        output$image_2 <- renderUI({
-          HTML(htmltools::includeHTML(resfile_paths()$annotated_zwei))
-        })},
-        error =function(e){
-          showModal(modalDialog("Plotting Error!", "Annotated alignment could not be generated. Click & proceed to the remaining results.", easyClose = TRUE))  
-        })      
-    }
-    else if (input$windowsize == "Complete"){
-      tryCatch({
-        output$image_2 <- renderUI({
-          HTML(htmltools::includeHTML(resfile_paths()$annotated_drei))
-        })},
-        error =function(e){
-          showModal(modalDialog("Plotting Error!", "Annotated alignment could not be generated. Click & proceed to the remaining results.", easyClose = TRUE))  
-        })
-    }
+  ### Changing the alignment 
+  observeEvent(input$filter, {
+    tryCatch({
+      windowgroesse <- input$windo
+      sequenzenanzeige <- input$topseqs
+      sequenzdatei <- file.path(resfile_paths()$onepathforall,"UsedSequences_unlim.fasta")
+      positionsdatei <- file.path(resfile_paths()$onepathforall, "positiondictionary.txt")
+      featuredatei <-file.path(resfile_paths()$onepathforall,"featurefile.txt")
+      clusterdatei <- file.path(resfile_paths()$onepathforall,"clusterfile.txt")
+      translatione <- file.path(resfile_paths()$onepathforall,"translationfile.txt")
+      commando <- paste("/home/bq_tschmenger/anaconda2/bin/python /net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/STABLE_Annotate_Alignment_V8_Proteorizer.py",
+                        resfile_paths()$uni_identifier,
+                        resfile_paths()$mutatoos,
+                        as.character(windowgroesse),
+                        sequenzdatei,
+                        positionsdatei,
+                        featuredatei,
+                        as.character(sequenzenanzeige),
+                        clusterdatei,
+                        translatione,
+                        sep=" ")
+      setwd(resfile_paths()$onepathforall)
+      system(commando)
+      if (length(grep(',', as.character(resfile_paths()$mutatoos)))){
+        windowgroesse <- "30000"
+      }
+      resultalignment <- paste("AnnotatedAlignment_",
+                               as.character(windowgroesse),
+                               "_",
+                               as.character(sequenzenanzeige),
+                               ".svg",
+                               sep="")
+      resultalignmentpath <- file.path(resfile_paths()$onepathforall,
+                                       resultalignment)
+      alignmentpathway(list(annotated = resultalignmentpath))
+      
+      output$image_2 <- renderUI({
+        HTML(htmltools::includeHTML(alignmentpathway()$annotated))
+      })
+    },
+    error =function(e){
+      showModal(modalDialog("Plotting Error!", "Make sure you correctly submitted your input.", easyClose = TRUE))  
+    })
   })
+  
   
   ### Resetting the structure
   observeEvent(input$reset, {
@@ -398,12 +452,13 @@ server <- function(input, output, session) {
   #############   #############   #############   #############   #############   #############   ############# 
   ############# Working on the PreLoaded data
   observeEvent(input$dataset,{
+    parentfolder <- "/net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/R_Shiny_Interface/"
     output$mytable1_discover <- NULL
     output$image_1_discover <- NULL
     output$image_2_discover <- NULL
     
     if (nchar(input$dataset)>=2){
-      directions <- basename(list.dirs(path=file.path("www/",input$dataset,"/")))
+      directions <- basename(list.dirs(path=file.path(parentfolder, "www/",input$dataset,"/")))
       choiceis <- c("",directions)
       
       updateSelectInput(session,'proteincase',
@@ -415,6 +470,7 @@ server <- function(input, output, session) {
   })
   #############
   observeEvent(input$proteincase,{
+    parentfolder <- "/net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/R_Shiny_Interface/"
     
     if (nchar(input$dataset)>=2){
       #        print("step1")
@@ -423,18 +479,19 @@ server <- function(input, output, session) {
         if (input$proteincase != ""){
           
           if (input$dataset == "Proteorizer_RW_VUS_Humsavar"){
-            completeTABLEfilepath <- file.path("www",input$dataset,input$proteincase,"FinalResults_unlim_conservation_scored.txt")}
-          else {completeTABLEfilepath <- file.path("www",input$dataset,input$proteincase,"FinalResults_unlim_conservation_scored_hclust.txt")}
+            completeTABLEfilepath <- file.path(parentfolder,"www",input$dataset,input$proteincase,"FinalResults_unlim_conservation_scored.txt")}
+          else {completeTABLEfilepath <- file.path(parentfolder, "www",input$dataset,input$proteincase,"FinalResults_unlim_conservation_scored_hclust.txt")}
           
-          completeCLUSTERpath <- file.path("www",input$dataset,input$proteincase,"ClusterPlot_unlim.svg")
+          completeCLUSTERpath <- file.path(parentfolder, "www",input$dataset,input$proteincase,"ClusterPlot_unlim.svg")
           
-          completeALIGNMENTpath <- file.path("www",input$dataset,input$proteincase,"AnnotatedAlignment.svg")
+          completeALIGNMENTpath <- file.path(parentfolder, "www",input$dataset,input$proteincase,"AnnotatedAlignment.svg")
           
           ### preparing the table
           thediscovertable <- read.delim(completeTABLEfilepath, header = T, sep ="\t", quote="")
           betterorder <- c("Clusternumber","Data_Source","Position","BAYES","SeqIdent%","TypeIdent%","Functional_Information","Mechismo_Predictions")
           colnames(thediscovertable)<- c("Clusternumber","Data_Source","Position","Functional_Information","Mechismo_Predictions","SeqIdent%","TypeIdent%","BAYES")
           thediscovertable <- thediscovertable[, betterorder]
+          thediscovertable[, 'Clusternumber'] <- str_replace(thediscovertable[, 'Clusternumber'], "NoClusterMembership", "-")
           thediscovertable[, 'Clusternumber'] <- as.integer(thediscovertable[, 'Clusternumber'])
           thediscovertable[, 'SeqIdent%'] <- as.integer(thediscovertable[, 'SeqIdent%'])
           thediscovertable[, 'TypeIdent%'] <- as.integer(thediscovertable[, 'TypeIdent%'])
@@ -470,7 +527,7 @@ server <- function(input, output, session) {
           proteinID_raw <- strsplit(input$proteincase,"-")
           proteinID <- proteinID_raw[[1]][1]
           alphafoldfile_discover <- paste("AF-",proteinID,"-F1-model_v3.pdb",sep="")  
-          structurepath_discover <- file.path("www",input$dataset,input$proteincase,alphafoldfile_discover)
+          structurepath_discover <- file.path(parentfolder,"www",input$dataset,input$proteincase,alphafoldfile_discover)
           output$structure_discover <- renderNGLVieweR({
             NGLVieweR(structurepath_discover) %>%
               addRepresentation("cartoon",
@@ -486,11 +543,12 @@ server <- function(input, output, session) {
   
   ### Resetting the structure in "Discover"
   observeEvent(input$reset_discover, {
+    parentfolder <- "/net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/R_Shiny_Interface/"
     if (nchar(input$proteincase)>=2){
       proteinID_raw <- strsplit(input$proteincase,"-")
       proteinID <- proteinID_raw[[1]][1]
       alphafoldfile_discover <- paste("AF-",proteinID,"-F1-model_v3.pdb",sep="")  
-      structurepath_discover <- file.path("www",input$dataset,input$proteincase,alphafoldfile_discover)
+      structurepath_discover <- file.path(parentfolder, "www",input$dataset,input$proteincase,alphafoldfile_discover)
       output$structure_discover <- renderNGLVieweR({
         NGLVieweR(structurepath_discover) %>%
           addRepresentation("cartoon",
@@ -521,14 +579,15 @@ server <- function(input, output, session) {
     }})
   ### Adding residue highlights to the structure in "Discover"
   observeEvent(input$add_discover, {
+    parentfolder <- "/net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/R_Shiny_Interface/"
     if (nchar(input$proteincase)>=2){
       colorpicker = 1
       colorlist <- c("red","blue","green","brown","purple","yellow","orange")
       ### Getting the information that needs to be highlighted on the structure
       tryCatch({
         if (input$dataset=="Proteorizer_RW_VUS_Humsavar"){
-          tablepath <- file.path("www",input$dataset,input$proteincase,"FinalResults_unlim_conservation_scored.txt")}
-        else {tablepath <- file.path("www",input$dataset,input$proteincase,"FinalResults_unlim_conservation_scored_hclust.txt")}
+          tablepath <- file.path(parentfolder,"www",input$dataset,input$proteincase,"FinalResults_unlim_conservation_scored.txt")}
+        else {tablepath <- file.path(parentfolder, "www",input$dataset,input$proteincase,"FinalResults_unlim_conservation_scored_hclust.txt")}
         partfilus <- read.delim(tablepath, header=TRUE, quote="")
         inputclusters <- c()
         inputpositions <- c()
@@ -612,7 +671,3 @@ server <- function(input, output, session) {
     }})
   
 }
-
-
-
-###########################################

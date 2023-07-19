@@ -1,15 +1,18 @@
 library(shiny)
 library(shinyjs)
 library(rmarkdown)
-library(gmailr)
+#library(gmailr)
 library(NGLVieweR)
 library(dplyr)
 library(shinycssloaders)
 library(htmltools)
 library(DT)
+library(stringr)
+library(shinyFeedback)
 ### http://shiny.russelllab.org/proteorizer/
 
 ui <- fluidPage(
+  useShinyFeedback(),
   navbarPage(
     "Proteorizer",
     
@@ -27,14 +30,20 @@ ui <- fluidPage(
     ),
     # Second tab with input form
     tabPanel("Submit",
-             icon = icon("envelope"),lib="font-awesome",
-             textInput("request", "Enter your request (single line):", 
-                       placeholder = "RHOA/Y34C"),
-             selectInput("option_input","Select a clustering method:",
-                         choices = c("RandomWalk","HClust")),
-             fileInput("file_input","OPTIONAL: Select a custom alignment:"),
-             actionButton("example","Example"),
-             actionButton("submit", "Submit")
+             fluidRow(
+               column(3,textInput("request", "Enter your request (single line):", 
+                                  placeholder = "RHOA/Y34C"))),
+             fluidRow(
+               column(2,selectInput("option_input","Select a clustering method:",
+                                    choices = c("RandomWalk","HClust"))),
+               column(2,selectInput("dataset_input","Select dataset to use:",
+                                    choices = c("Uniprot","Humsavar","Both")))),
+             fluidRow(
+               column(3,fileInput("file_input","OPTIONAL: Select a custom alignment:"))),
+             fluidRow(
+               column(2,actionButton("example","Example")),
+               column(2,actionButton("submit", "Submit"))),
+             icon = icon("envelope"),lib="font-awesome"
              
     ),
     tabPanel("Explore the results",
@@ -56,10 +65,13 @@ ui <- fluidPage(
                         id = "clust"),
                tabPanel("AnnotatedAlignment",
                         fluidRow(
-                          column(2, selectInput("windowsize","Select Alignment Windowsize",choices = c(""))),
-                          column(3,downloadButton("download_alignment", "Download Complete Alignment"))
+                          column(2, numericInput("windo", "Windowsize:", 30, min = 1, max = 200)),
+                          column(2, numericInput("topseqs", "Sequences:", 15, min = 1, max = 30)),
+                          column(2, actionButton("filter", "Apply settings")),
+                          column(3, downloadButton("download_alignment", "Download Alignment"))
                         ),
                         tags$style(type='text/css', "#download_alignment { width:100%; margin-top: 25px;}"),
+                        tags$style(type='text/css', "#filter { width:100%; margin-top: 25px;}"),
                         shinycssloaders::withSpinner(uiOutput("image_2"), id="spinner3"),
                         icon = icon("grip-lines"),lib="font-awesome",
                         id = "align"),
@@ -88,7 +100,10 @@ ui <- fluidPage(
              icon = icon("compass"),lib="font-awesome",
              tabsetPanel(
                tabPanel("Data Selection",
-                        selectInput("dataset","Select Dataset",choices = c("","Proteorizer_RW_VUS_Humsavar","Proteorizer_HClust_VUS_Humsavar")),
+                        selectInput("dataset","Select Dataset",choices = c("",
+                                                                           "Proteorizer_RW_VUS_Humsavar",
+                                                                           "Proteorizer_HClust_VUS_Humsavar"
+                        )),
                         selectInput("proteincase",
                                     "Waiting for dataset selection. Loading...",
                                     choices = NULL),
@@ -134,3 +149,4 @@ ui <- fluidPage(
     )
   )
 )
+#######################################################################################################################################
