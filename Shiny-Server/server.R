@@ -31,7 +31,7 @@ server <- function(input, output, session) {
   alignmentpathway <- reactiveVal()
   
   observeEvent(input$example, {
-    updateTextInput(session, "request",value="RHOA/Y34C")
+    updateTextInput(session, "request",value="RHOA/Y34C,L191A,K140A")
   })
   
   observeEvent(input$dataset_input, {
@@ -130,10 +130,10 @@ server <- function(input, output, session) {
                               customfile_name,
                               sep = "")
       
-      cmd <- paste("/home/bq_tschmenger/anaconda2/bin/python /net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/STABLE_Proteorizer_alpha_20230719.py",uniprot,mutations,genename,"R_Submissions FALSE",customalignfile,"FALSE","FALSE",option,datensatz,foldernumber, sep=" ")
+      cmd <- paste("/home/bq_tschmenger/anaconda2/bin/python /net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/STABLE_Proteorizer_alpha_20230810.py",uniprot,mutations,genename,"R_Submissions FALSE",customalignfile,"FALSE","FALSE",option,datensatz,foldernumber, sep=" ")
     }
     else {
-      cmd <- paste("/home/bq_tschmenger/anaconda2/bin/python /net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/STABLE_Proteorizer_alpha_20230719.py",uniprot,mutations,genename,"R_Submissions FALSE",filepathus,"FALSE","FALSE",option,datensatz,foldernumber, sep=" ")
+      cmd <- paste("/home/bq_tschmenger/anaconda2/bin/python /net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/STABLE_Proteorizer_alpha_20230810.py",uniprot,mutations,genename,"R_Submissions FALSE",filepathus,"FALSE","FALSE",option,datensatz,foldernumber, sep=" ")
     }
     
     #cat(cmd)
@@ -204,25 +204,23 @@ server <- function(input, output, session) {
     if (file_ready()){
       shinyjs::show("filter")
       
-      tryCatch({      
-        ### preparing the table
-        theresultsfile <- read.delim(resfile_paths()$tablepath, header = T, sep ="\t", quote="")
-        #View(theresultsfile)
-        betterorder <- c("Clusternumber","Data_Source","Position","BAYES","Predictor","SeqIdent%","TypeIdent%","Functional_Information","COSMIC","gnomAD_Het","gnomAD_Hom","Mechismo_Predictions")
-        colnames(theresultsfile)<- c("Clusternumber","Data_Source","Position","Functional_Information","Mechismo_Predictions","SeqIdent%","TypeIdent%","BAYES","COSMIC","gnomAD_Het","gnomAD_Hom","Predictor")
-        theresultsfile <- theresultsfile[, betterorder]
-        #theresultsfile[, 'Clusternumber'] <- as.integer(theresultsfile[, 'Clusternumber'])
-        theresultsfile[, 'SeqIdent%'] <- as.integer(theresultsfile[, 'SeqIdent%'])
-        theresultsfile[, 'TypeIdent%'] <- as.integer(theresultsfile[, 'TypeIdent%'])
-        #View(theresultsfile)
-        
-        output$mytable1 <- renderDataTable(theresultsfile,
-                                           filter = list(position = 'top', clear = FALSE, plain = TRUE
-                                           ))
-        
-      },error =function(e){
-        showModal(modalDialog("Table Error!", "Tabular results could not be generated. Click & proceed to the remaining results.", easyClose = TRUE))  
-      })
+         tryCatch({      
+      ### preparing the table
+      theresultsfile <- read.delim(resfile_paths()$tablepath, header = T, sep ="\t", quote="")
+      #View(theresultsfile)
+      betterorder <- c("Clusternumber","Data_Source","Position","Verdict","BAYES","Predictor","SeqIdent%","TypeIdent%","Functional_Information","COSMIC","gnomAD_Het","gnomAD_Hom","Mechismo_Predictions")
+      colnames(theresultsfile)<- c("Clusternumber","Data_Source","Position","Functional_Information","Mechismo_Predictions","SeqIdent%","TypeIdent%","BAYES","COSMIC","gnomAD_Het","gnomAD_Hom","Predictor","Verdict")
+      theresultsfile <- theresultsfile[, betterorder]
+      theresultsfile[, 'SeqIdent%'] <- as.integer(theresultsfile[, 'SeqIdent%'])
+      theresultsfile[, 'TypeIdent%'] <- as.integer(theresultsfile[, 'TypeIdent%'])
+      result_dt <- datatable(theresultsfile,
+                             filter = list(position = 'top', clear = FALSE, plain = TRUE
+                             )) %>% formatStyle("Verdict",backgroundColor = styleEqual(c("Impact","No_Impact","Uncertain","-"),c("mediumspringgreen","red","lightskyblue","white")))
+      output$mytable1 <- renderDataTable({result_dt}) 
+      
+          },error =function(e){
+            showModal(modalDialog("Table Error!", "Tabular results could not be generated. Click & proceed to the remaining results.", easyClose = TRUE))  
+          })
       
       ### preparing the images
       tryCatch({
