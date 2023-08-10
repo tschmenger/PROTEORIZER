@@ -107,5 +107,25 @@ ___
 - [Humsavar](https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/docs/humsavar.txt)
 - [gnomAD](https://gnomad.broadinstitute.org/)
 
-# To-Do
-- improve stability
+
+# Author
+
+**Dr. Torsten Schmenger**
+
+Postdoctoral Researcher
+
+Protein Evolution (Prof. Russell)
+
+BioQuant, INF 267
+
+69120 Heidelberg
+
+Germany
+
+
+___
+# Contact
+
+Feedback, questions or error reports should be directed to **torsten.schmenger [ a t ]bioquant.uni-heidelberg.de**.
+
+[Stand-Alone Alignment Annotations (not public yet)](https://github.com/tschmenger/Annotate_Alignments)
