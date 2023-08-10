@@ -11,7 +11,7 @@ Several features were used to perform bayesian integration (see the paper [above
 
 
 
-Machine learning was performed using a Random Forest Classifier trained on the same dataset as our bayesian classifier. However, we introduced additional features (such as the Mutscore derived from Betts and Russell, see [russelllab.org/aas](http://russelllab.org/aas)). For the performance please see (**Fig.1B**).
+Machine learning was performed using a Random Forest Classifier trained on the same dataset as our bayesian classifier. However, we introduced additional features (such as the Mutscore derived from Betts and Russell, see [russelllab.org/aas](http://russelllab.org/aas)). For the performance please see (**Fig.1B**). **Scores above 0.75** should be highlighting interesting cases with good confidence.
 
 <img src="ML_Metrics_20230720.png" alt = "ML Performance" width = "800">|
 |:--:| 
