@@ -130,10 +130,10 @@ server <- function(input, output, session) {
                               customfile_name,
                               sep = "")
       
-      cmd <- paste("/home/bq_tschmenger/anaconda2/bin/python /net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/STABLE_Proteorizer_alpha_20230810.py",uniprot,mutations,genename,"R_Submissions FALSE",customalignfile,"FALSE","FALSE",option,datensatz,foldernumber, sep=" ")
+      cmd <- paste("/home/bq_tschmenger/anaconda2/bin/python /net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/STABLE_Proteorizer_alpha_20230912.py",uniprot,mutations,genename,"R_Submissions FALSE",customalignfile,"FALSE","FALSE",option,datensatz,foldernumber, sep=" ")
     }
     else {
-      cmd <- paste("/home/bq_tschmenger/anaconda2/bin/python /net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/STABLE_Proteorizer_alpha_20230810.py",uniprot,mutations,genename,"R_Submissions FALSE",filepathus,"FALSE","FALSE",option,datensatz,foldernumber, sep=" ")
+      cmd <- paste("/home/bq_tschmenger/anaconda2/bin/python /net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/STABLE_Proteorizer_alpha_20230912.py",uniprot,mutations,genename,"R_Submissions FALSE",filepathus,"FALSE","FALSE",option,datensatz,foldernumber, sep=" ")
     }
     
     #cat(cmd)
@@ -204,23 +204,27 @@ server <- function(input, output, session) {
     if (file_ready()){
       shinyjs::show("filter")
       
-         tryCatch({      
-      ### preparing the table
-      theresultsfile <- read.delim(resfile_paths()$tablepath, header = T, sep ="\t", quote="")
-      #View(theresultsfile)
-      betterorder <- c("Clusternumber","Data_Source","Position","Verdict","BAYES","Predictor","SeqIdent%","TypeIdent%","Functional_Information","COSMIC","gnomAD_Het","gnomAD_Hom","Mechismo_Predictions")
-      colnames(theresultsfile)<- c("Clusternumber","Data_Source","Position","Functional_Information","Mechismo_Predictions","SeqIdent%","TypeIdent%","BAYES","COSMIC","gnomAD_Het","gnomAD_Hom","Predictor","Verdict")
-      theresultsfile <- theresultsfile[, betterorder]
-      theresultsfile[, 'SeqIdent%'] <- as.integer(theresultsfile[, 'SeqIdent%'])
-      theresultsfile[, 'TypeIdent%'] <- as.integer(theresultsfile[, 'TypeIdent%'])
-      result_dt <- datatable(theresultsfile,
-                             filter = list(position = 'top', clear = FALSE, plain = TRUE
-                             )) %>% formatStyle("Verdict",backgroundColor = styleEqual(c("Impact","No_Impact","Uncertain","-"),c("mediumspringgreen","red","lightskyblue","white")))
-      output$mytable1 <- renderDataTable({result_dt}) 
-      
-          },error =function(e){
-            showModal(modalDialog("Table Error!", "Tabular results could not be generated. Click & proceed to the remaining results.", easyClose = TRUE))  
-          })
+      tryCatch({
+        ### preparing the table
+        theresultsfile <- read.delim(resfile_paths()$tablepath, header = T, sep ="\t", quote="")
+        #View(theresultsfile)
+        betterorder <- c("Clusternumber","Data_Source","Position","Verdict","BAYES","Predictor","SeqIdent%","TypeIdent%","Functional_Information","COSMIC","gnomAD_Het","gnomAD_Hom","Mechismo_Predictions")
+        colnames(theresultsfile)<- c("Clusternumber","Data_Source","Position","Functional_Information","Mechismo_Predictions","SeqIdent%","TypeIdent%","BAYES","COSMIC","gnomAD_Het","gnomAD_Hom","Predictor","Verdict")
+        theresultsfile <- theresultsfile[, betterorder]
+        theresultsfile[, 'SeqIdent%'] <- as.integer(theresultsfile[, 'SeqIdent%'])
+        theresultsfile[, 'TypeIdent%'] <- as.integer(theresultsfile[, 'TypeIdent%'])
+        result_dt <- datatable(theresultsfile,
+                               filter = list(position = 'top', clear = FALSE, plain = TRUE
+                               )) %>% formatStyle("Verdict", backgroundColor = styleEqual(c("Impact(high)","Impact(medium)","Impact(low)","No_Impact","-"),c("mediumspringgreen","lightskyblue","#EB7B3B","white","white")))%>%
+          formatStyle("SeqIdent%", background = styleColorBar(range(theresultsfile$"SeqIdent%"), 'lightblue'),backgroundSize = '98% 88%',
+                      backgroundRepeat = 'no-repeat',backgroundPosition = 'center')%>%
+          formatStyle("TypeIdent%", background = styleColorBar(range(theresultsfile$"TypeIdent%"), 'lightblue'),backgroundSize = '98% 88%',
+                      backgroundRepeat = 'no-repeat',backgroundPosition = 'center')
+        output$mytable1 <- renderDataTable({result_dt}) 
+        
+      },error =function(e){
+        showModal(modalDialog("Table Error!", "Tabular results could not be generated. Click & proceed to the remaining results.", easyClose = TRUE))
+      })
       
       ### preparing the images
       tryCatch({
@@ -450,7 +454,7 @@ server <- function(input, output, session) {
   #############   #############   #############   #############   #############   #############   ############# 
   ############# Working on the PreLoaded data
   observeEvent(input$dataset,{
-    parentfolder <- "/net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/R_Shiny_Interface/"
+    parentfolder <- "/srv/shiny-server/proteorizer/"
     output$mytable1_discover <- NULL
     output$image_1_discover <- NULL
     output$image_2_discover <- NULL
@@ -468,7 +472,7 @@ server <- function(input, output, session) {
   })
   #############
   observeEvent(input$proteincase,{
-    parentfolder <- "/net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/R_Shiny_Interface/"
+    parentfolder <- "/srv/shiny-server/proteorizer/"
     
     if (nchar(input$dataset)>=2){
       #        print("step1")
@@ -476,26 +480,37 @@ server <- function(input, output, session) {
         #          print("step2")
         if (input$proteincase != ""){
           
-          if (input$dataset == "Proteorizer_RW_VUS_Humsavar"){
+          if (input$dataset == "VUS_Humsavar_RW"){ #if (input$dataset == "Proteorizer_RW_VUS_Humsavar"){
             completeTABLEfilepath <- file.path(parentfolder,"www",input$dataset,input$proteincase,"FinalResults_unlim_conservation_scored.txt")}
           else {completeTABLEfilepath <- file.path(parentfolder, "www",input$dataset,input$proteincase,"FinalResults_unlim_conservation_scored_hclust.txt")}
           
           completeCLUSTERpath <- file.path(parentfolder, "www",input$dataset,input$proteincase,"ClusterPlot_unlim.svg")
           
-          completeALIGNMENTpath <- file.path(parentfolder, "www",input$dataset,input$proteincase,"AnnotatedAlignment.svg")
+          completeALIGNMENTpath <- file.path(parentfolder, "www",input$dataset,input$proteincase,"AnnotatedAlignment_30_15.svg")
+          if (file.exists(completeALIGNMENTpath)== T){}
+          else {
+            completeALIGNMENTpath <- file.path(parentfolder, "www",input$dataset,input$proteincase,"AnnotatedAlignment_30000_15.svg")
+          }
           
           ### preparing the table
           thediscovertable <- read.delim(completeTABLEfilepath, header = T, sep ="\t", quote="")
-          betterorder <- c("Clusternumber","Data_Source","Position","BAYES","SeqIdent%","TypeIdent%","Functional_Information","Mechismo_Predictions")
-          colnames(thediscovertable)<- c("Clusternumber","Data_Source","Position","Functional_Information","Mechismo_Predictions","SeqIdent%","TypeIdent%","BAYES")
+          betterorder <- c("Clusternumber","Data_Source","Position","Verdict","BAYES","Predictor","SeqIdent%","TypeIdent%","Functional_Information","COSMIC","gnomAD_Het","gnomAD_Hom","Mechismo_Predictions")
+          colnames(thediscovertable)<- c("Clusternumber","Data_Source","Position","Functional_Information","Mechismo_Predictions","SeqIdent%","TypeIdent%","BAYES","COSMIC","gnomAD_Het","gnomAD_Hom","Predictor","Verdict")
           thediscovertable <- thediscovertable[, betterorder]
           thediscovertable[, 'Clusternumber'] <- str_replace(thediscovertable[, 'Clusternumber'], "NoClusterMembership", "-")
           thediscovertable[, 'Clusternumber'] <- as.integer(thediscovertable[, 'Clusternumber'])
+          thediscovertable[, 'Verdict'] <- as.character(thediscovertable[, 'Verdict'])
           thediscovertable[, 'SeqIdent%'] <- as.integer(thediscovertable[, 'SeqIdent%'])
           thediscovertable[, 'TypeIdent%'] <- as.integer(thediscovertable[, 'TypeIdent%'])
-          output$mytable1_discover <- renderDataTable(thediscovertable, 
-                                                      filter = list(position = 'bottom', clear = FALSE, plain = TRUE
-                                                      ))
+          result_discover <- datatable(thediscovertable,
+                                       filter = list(position = 'top', clear = FALSE, plain = TRUE
+                                       )) %>% formatStyle("Verdict", backgroundColor = styleEqual(c("Impact(high)","Impact(medium)","Impact(low)","No_Impact","-"),c("mediumspringgreen","lightskyblue","#EB7B3B","white","white")))%>%
+            formatStyle("SeqIdent%", background = styleColorBar(range(0,100), 'lightblue'),backgroundSize = '98% 88%',
+                        backgroundRepeat = 'no-repeat',backgroundPosition = 'center')%>%
+            formatStyle("TypeIdent%", background = styleColorBar(range(0,100), 'lightblue'),backgroundSize = '98% 88%',
+                        backgroundRepeat = 'no-repeat',backgroundPosition = 'center')
+          output$mytable1_discover <- renderDataTable({result_discover}) 
+          
           output$download_table_discover <- downloadHandler(
             filename = function() {
               paste("FuncInfo_",Sys.Date(),".csv",sep="")
@@ -541,7 +556,7 @@ server <- function(input, output, session) {
   
   ### Resetting the structure in "Discover"
   observeEvent(input$reset_discover, {
-    parentfolder <- "/net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/R_Shiny_Interface/"
+    parentfolder <- "/srv/shiny-server/proteorizer/"
     if (nchar(input$proteincase)>=2){
       proteinID_raw <- strsplit(input$proteincase,"-")
       proteinID <- proteinID_raw[[1]][1]
@@ -577,13 +592,13 @@ server <- function(input, output, session) {
     }})
   ### Adding residue highlights to the structure in "Discover"
   observeEvent(input$add_discover, {
-    parentfolder <- "/net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/R_Shiny_Interface/"
+    parentfolder <- "/srv/shiny-server/proteorizer/"
     if (nchar(input$proteincase)>=2){
       colorpicker = 1
       colorlist <- c("red","blue","green","brown","purple","yellow","orange")
       ### Getting the information that needs to be highlighted on the structure
       tryCatch({
-        if (input$dataset=="Proteorizer_RW_VUS_Humsavar"){
+        if (input$dataset=="VUS_Humsavar_RW"){ #if (input$dataset=="Proteorizer_RW_VUS_Humsavar"){
           tablepath <- file.path(parentfolder,"www",input$dataset,input$proteincase,"FinalResults_unlim_conservation_scored.txt")}
         else {tablepath <- file.path(parentfolder, "www",input$dataset,input$proteincase,"FinalResults_unlim_conservation_scored_hclust.txt")}
         partfilus <- read.delim(tablepath, header=TRUE, quote="")

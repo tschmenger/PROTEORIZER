@@ -1,0 +1,6 @@
+___
+# The Datasets
+
+The two datasets to choose from (**VUS_Humsavar_RW** and **VUS_Humsavar_HClust**) were created by using this tool's method (using either Random Walk **RW** or Hierachical Clustering **HClust**) on variants of unknown significance (VUS) from [Humsavar.txt](https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/docs/humsavar.txt).
+
+Only cases were clustering on the protein of interest was successful can be selected.

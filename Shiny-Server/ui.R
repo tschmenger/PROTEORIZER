@@ -101,8 +101,10 @@ ui <- fluidPage(
              tabsetPanel(
                tabPanel("Data Selection",
                         selectInput("dataset","Select Dataset",choices = c("",
-                                                                           "Proteorizer_RW_VUS_Humsavar",
-                                                                           "Proteorizer_HClust_VUS_Humsavar"
+                                                                           #"Proteorizer_RW_VUS_Humsavar",
+                                                                           #"Proteorizer_HClust_VUS_Humsavar"
+                                                                           "VUS_Humsavar_RW",
+                                                                           "VUS_Humsavar_HClust"
                         )),
                         selectInput("proteincase",
                                     "Waiting for dataset selection. Loading...",
