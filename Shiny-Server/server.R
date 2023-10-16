@@ -10,6 +10,8 @@ library(DT)
 library(stringr)
 library(shinyFeedback)
 
+#######################################################################################################################################
+
 ############# Working on the Input and Result Generation
 ###### This is to make the input easier
 idmapper <- read.delim("/net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoX/Lookups/Uniprot_GeneNames_Reviewed.tsv", header= T, sep = "\t", stringsAsFactors = FALSE)
@@ -130,10 +132,10 @@ server <- function(input, output, session) {
                               customfile_name,
                               sep = "")
       
-      cmd <- paste("/home/bq_tschmenger/anaconda2/bin/python /net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/STABLE_Proteorizer_alpha_20230912.py",uniprot,mutations,genename,"R_Submissions FALSE",customalignfile,"FALSE","FALSE",option,datensatz,foldernumber, sep=" ")
+      cmd <- paste("/home/bq_tschmenger/anaconda2/bin/python /net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/STABLE_Proteorizer_alpha_20231016.py",uniprot,mutations,genename,"R_Submissions FALSE",customalignfile,"FALSE","FALSE",option,datensatz,foldernumber, sep=" ")
     }
     else {
-      cmd <- paste("/home/bq_tschmenger/anaconda2/bin/python /net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/STABLE_Proteorizer_alpha_20230912.py",uniprot,mutations,genename,"R_Submissions FALSE",filepathus,"FALSE","FALSE",option,datensatz,foldernumber, sep=" ")
+      cmd <- paste("/home/bq_tschmenger/anaconda2/bin/python /net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/STABLE_Proteorizer_alpha_20231016.py",uniprot,mutations,genename,"R_Submissions FALSE",filepathus,"FALSE","FALSE",option,datensatz,foldernumber, sep=" ")
     }
     
     #cat(cmd)
@@ -203,7 +205,25 @@ server <- function(input, output, session) {
   observeEvent(file_ready(),{
     if (file_ready()){
       shinyjs::show("filter")
-      
+      kopftext <- c("Cluster number. Filter to show positions close to each other.",
+                    "Source of the data, one of [Input, Uniprot] for the protein of interest or [Orthos] when mapped from similar proteins.",
+                    "Amino acid residue number based on the protein of interest",
+                    "Prediction outcome. The prediction result is meaningful if BAYES and Predictor transformed values combined are >= 0.25 (medium) or > 0.5 (high).",
+                    "Score derived from naive bayesian. Score transformation: 10 to 12.5 -> 0.125|12.5 to 15 -> 0.25|>15 -> 0.375.",
+                    "Score calculated using a random forest predictor. Score transformation: 0.5 to 0.7 -> 0.125|0.7 to 0.9 -> 0.25|> 0.9 -> 0.375",
+                    "Sequence identity based on the alignment.",
+                    "Amino acid type identity based on the alignment. Types: hydrophobic(A,I,L,M,F,W,V,C), positive(K,R), negative(E,D), polar(N,Q,S,T), aromatic(H,Y).",
+                    "Functional information based on prior knowledge.",
+                    "COSMIC count.",
+                    "gnomAD counts (heterozygous)",
+                    "gnomAD counts (homozygous)",
+                    "Mechismo results on protein interaction perturbations. For more visit mechismo3.russelllab.org.")    
+      headerCallback <- c("function(thead, data, start, end, display){",
+                          sprintf(" var tooltips = [%s];", toString(paste0("'",kopftext,"'"))),
+                          " for(var i = 1; i <= tooltips.length; i++){",
+                          "   $('th:eq('+i+')',thead).attr('title',tooltips[i-1]);",
+                          " }",
+                          "}")
       tryCatch({
         ### preparing the table
         theresultsfile <- read.delim(resfile_paths()$tablepath, header = T, sep ="\t", quote="")
@@ -214,6 +234,7 @@ server <- function(input, output, session) {
         theresultsfile[, 'SeqIdent%'] <- as.integer(theresultsfile[, 'SeqIdent%'])
         theresultsfile[, 'TypeIdent%'] <- as.integer(theresultsfile[, 'TypeIdent%'])
         result_dt <- datatable(theresultsfile,
+                               options =list(headerCallback=JS(headerCallback)),
                                filter = list(position = 'top', clear = FALSE, plain = TRUE
                                )) %>% formatStyle("Verdict", backgroundColor = styleEqual(c("Impact(high)","Impact(medium)","Impact(low)","No_Impact","-"),c("mediumspringgreen","lightskyblue","#EB7B3B","white","white")))%>%
           formatStyle("SeqIdent%", background = styleColorBar(range(theresultsfile$"SeqIdent%"), 'lightblue'),backgroundSize = '98% 88%',
@@ -454,7 +475,8 @@ server <- function(input, output, session) {
   #############   #############   #############   #############   #############   #############   ############# 
   ############# Working on the PreLoaded data
   observeEvent(input$dataset,{
-    parentfolder <- "/srv/shiny-server/proteorizer/"
+    parentfolder <- "/net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/R_Shiny_Interface/"
+    #parentfolder <- "/srv/shiny-server/proteorizer/"
     output$mytable1_discover <- NULL
     output$image_1_discover <- NULL
     output$image_2_discover <- NULL
@@ -472,7 +494,8 @@ server <- function(input, output, session) {
   })
   #############
   observeEvent(input$proteincase,{
-    parentfolder <- "/srv/shiny-server/proteorizer/"
+    parentfolder <- "/net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/R_Shiny_Interface/"
+    #parentfolder <- "/srv/shiny-server/proteorizer/"
     
     if (nchar(input$dataset)>=2){
       #        print("step1")
@@ -556,7 +579,8 @@ server <- function(input, output, session) {
   
   ### Resetting the structure in "Discover"
   observeEvent(input$reset_discover, {
-    parentfolder <- "/srv/shiny-server/proteorizer/"
+    parentfolder <- "/net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/R_Shiny_Interface/"
+    #parentfolder <- "/srv/shiny-server/proteorizer/"
     if (nchar(input$proteincase)>=2){
       proteinID_raw <- strsplit(input$proteincase,"-")
       proteinID <- proteinID_raw[[1]][1]
@@ -592,7 +616,8 @@ server <- function(input, output, session) {
     }})
   ### Adding residue highlights to the structure in "Discover"
   observeEvent(input$add_discover, {
-    parentfolder <- "/srv/shiny-server/proteorizer/"
+    parentfolder <- "/net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/R_Shiny_Interface/"
+    #parentfolder <- "/srv/shiny-server/proteorizer/"
     if (nchar(input$proteincase)>=2){
       colorpicker = 1
       colorlist <- c("red","blue","green","brown","purple","yellow","orange")
@@ -684,3 +709,4 @@ server <- function(input, output, session) {
     }})
   
 }
+
