@@ -303,6 +303,7 @@ else:
 #	os.system(newcommand)
 	alignments = CUSTOM_ALIGN(erledigt_two, project, test_unip)
 	FASTA_MAKER(test_unip, project, alignments)
+	truevariants = ""
 
 end_time_1 = time.time()
 differ_1 = end_time_1 - start_time_1
