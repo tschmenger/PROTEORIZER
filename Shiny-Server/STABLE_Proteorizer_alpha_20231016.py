@@ -1840,12 +1840,12 @@ try:
 #### drawing the complete alignment may consume a lot of time if the proteins have a decent size and if there are a bunch of them in the alignment
 	if "," in test_mutat_raw:
 		create_svg(alignments, project, colordict, test_mutat_raw, 5, test_unip, test_gn, TheForbiddenPositions)
-		annotationcommand = "/home/bq_tschmenger/anaconda2/bin/python /net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/STABLE_Annotate_Alignment_V8_Proteorizer.py "+test_unip+" "+test_mutat_raw+" 30 "+ "UsedSequences_unlim.fasta positiondictionary.txt featurefile.txt 15 clusterfile.txt translationfile.txt"
+		annotationcommand = "/home/bq_tschmenger/anaconda2/bin/python /net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/STABLE_Annotate_Alignment_V9_Proteorizer.py "+test_unip+" "+test_mutat_raw+" 30 "+ "UsedSequences_unlim.fasta positiondictionary.txt featurefile.txt 15 clusterfile.txt translationfile.txt"
 		os.system(annotationcommand)
 	else:
 		input_position = nums.search(str(test_mutat)).group(0)
 		create_svg(alignments, project, colordict, input_position, 5, test_unip, test_gn, TheForbiddenPositions)
-		annotationcommand = "/home/bq_tschmenger/anaconda2/bin/python /net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/STABLE_Annotate_Alignment_V8_Proteorizer.py "+test_unip+" "+input_position+" 30 "+ "UsedSequences_unlim.fasta positiondictionary.txt featurefile.txt 15 clusterfile.txt translationfile.txt"
+		annotationcommand = "/home/bq_tschmenger/anaconda2/bin/python /net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/STABLE_Annotate_Alignment_V9_Proteorizer.py "+test_unip+" "+input_position+" 30 "+ "UsedSequences_unlim.fasta positiondictionary.txt featurefile.txt 15 clusterfile.txt translationfile.txt"
 		os.system(annotationcommand)
 
 
