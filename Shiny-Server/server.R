@@ -10,8 +10,6 @@ library(DT)
 library(stringr)
 library(shinyFeedback)
 
-#######################################################################################################################################
-
 ############# Working on the Input and Result Generation
 ###### This is to make the input easier
 idmapper <- read.delim("/net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoX/Lookups/Uniprot_GeneNames_Reviewed.tsv", header= T, sep = "\t", stringsAsFactors = FALSE)
@@ -35,7 +33,12 @@ server <- function(input, output, session) {
   observeEvent(input$example, {
     updateTextInput(session, "request",value="RHOA/Y34C,L191A,K140A")
   })
-  
+  observeEvent(input$example_two, {
+    updateTextInput(session, "request",value="P04637/R273C")
+  })
+  observeEvent(input$example_three, {
+    updateTextInput(session, "request",value="P00533/L858R")
+  }) 
   observeEvent(input$dataset_input, {
     if (input$dataset_input == "Humsavar") {
       showFeedbackWarning(
@@ -132,10 +135,10 @@ server <- function(input, output, session) {
                               customfile_name,
                               sep = "")
       
-      cmd <- paste("/home/bq_tschmenger/anaconda2/bin/python /net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/STABLE_Proteorizer_alpha_20231016.py",uniprot,mutations,genename,"R_Submissions FALSE",customalignfile,"FALSE","FALSE",option,datensatz,foldernumber, sep=" ")
+      cmd <- paste("/home/bq_tschmenger/anaconda2/bin/python /net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/DevVersion_Proteorizer_alpha_September2023.py",uniprot,mutations,genename,"R_Submissions FALSE",customalignfile,"FALSE","FALSE",option,datensatz,foldernumber, sep=" ")
     }
     else {
-      cmd <- paste("/home/bq_tschmenger/anaconda2/bin/python /net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/STABLE_Proteorizer_alpha_20231016.py",uniprot,mutations,genename,"R_Submissions FALSE",filepathus,"FALSE","FALSE",option,datensatz,foldernumber, sep=" ")
+      cmd <- paste("/home/bq_tschmenger/anaconda2/bin/python /net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/DevVersion_Proteorizer_alpha_September2023.py",uniprot,mutations,genename,"R_Submissions FALSE",filepathus,"FALSE","FALSE",option,datensatz,foldernumber, sep=" ")
     }
     
     #cat(cmd)
@@ -233,6 +236,7 @@ server <- function(input, output, session) {
         theresultsfile <- theresultsfile[, betterorder]
         theresultsfile[, 'SeqIdent%'] <- as.integer(theresultsfile[, 'SeqIdent%'])
         theresultsfile[, 'TypeIdent%'] <- as.integer(theresultsfile[, 'TypeIdent%'])
+        theresultsfile[, 'Clusternumber'] <- as.integer(as.character(theresultsfile[, 'Clusternumber']))
         result_dt <- datatable(theresultsfile,
                                options =list(headerCallback=JS(headerCallback)),
                                filter = list(position = 'top', clear = FALSE, plain = TRUE
@@ -312,7 +316,7 @@ server <- function(input, output, session) {
       featuredatei <-file.path(resfile_paths()$onepathforall,"featurefile.txt")
       clusterdatei <- file.path(resfile_paths()$onepathforall,"clusterfile.txt")
       translatione <- file.path(resfile_paths()$onepathforall,"translationfile.txt")
-      commando <- paste("/home/bq_tschmenger/anaconda2/bin/python /net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/STABLE_Annotate_Alignment_V8_Proteorizer.py",
+      commando <- paste("/home/bq_tschmenger/anaconda2/bin/python /net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/STABLE_Annotate_Alignment_V9_Proteorizer.py",
                         resfile_paths()$uni_identifier,
                         resfile_paths()$mutatoos,
                         as.character(windowgroesse),

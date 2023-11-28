@@ -41,8 +41,18 @@ ui <- fluidPage(
              fluidRow(
                column(3,fileInput("file_input","OPTIONAL: Select a custom alignment:"))),
              fluidRow(
-               column(2,actionButton("example","Example")),
+               column(2,actionButton("example",
+                                     "Example:RHOA",
+                                     style="width:130px")),
                column(2,actionButton("submit", "Submit"))),
+             fluidRow(
+               column(2,actionButton("example_two",
+                                     "Example:TP53",
+                                     style="width:130px"))),
+             fluidRow(
+               column(2,actionButton("example_three",
+                                     "Example:EGFR",
+                                     style="width:130px"))),
              icon = icon("envelope"),lib="font-awesome"
              
     ),
@@ -151,4 +161,3 @@ ui <- fluidPage(
     )
   )
 )
-#######################################################################################################################################
