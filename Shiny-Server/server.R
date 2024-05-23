@@ -135,10 +135,10 @@ server <- function(input, output, session) {
                               customfile_name,
                               sep = "")
       
-      cmd <- paste("/home/bq_tschmenger/anaconda2/bin/python /net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/DevVersion_Proteorizer_alpha_September2023.py",uniprot,mutations,genename,"R_Submissions FALSE",customalignfile,"FALSE","FALSE",option,datensatz,foldernumber, sep=" ")
+      cmd <- paste("/home/bq_tschmenger/anaconda2/bin/python /net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/STABLE_Proteorizer_alpha_20240523.py",uniprot,mutations,genename,"R_Submissions FALSE",customalignfile,"FALSE","FALSE",option,datensatz,foldernumber, sep=" ")
     }
     else {
-      cmd <- paste("/home/bq_tschmenger/anaconda2/bin/python /net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/DevVersion_Proteorizer_alpha_September2023.py",uniprot,mutations,genename,"R_Submissions FALSE",filepathus,"FALSE","FALSE",option,datensatz,foldernumber, sep=" ")
+      cmd <- paste("/home/bq_tschmenger/anaconda2/bin/python /net/home.isilon/ag-russell/bq_tschmenger/PhD/MechismoScanner/PERTURBED_INTERFACES/EnrichmentProbability/Hereditary_Cancer/3D_Clustering_For_Any_Variant/STABLE_Proteorizer_alpha_20240523.py",uniprot,mutations,genename,"R_Submissions FALSE",filepathus,"FALSE","FALSE",option,datensatz,foldernumber, sep=" ")
     }
     
     #cat(cmd)
