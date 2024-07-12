@@ -410,9 +410,9 @@ extra_dictionary = {"Hereditary":{},	### Mutation: [Disease]
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 def HOMOL_UNIP_GETTER(inputdictionary_one, inputdictionary_two, inputdictionary_three, uniprot_identifier, inputdictionary_four, canon_gene):
 	conn = psycopg2.connect(database="proteorizer", 
-            host="pevolution2.bioquant.uni-heidelberg.de",
-            user="bq_tschmenger",
-	    password="12345678910")
+            host="x",
+            user="x",
+	    password="x")
 	cursor = conn.cursor()
 	for protein in inputdictionary_one:
 		if protein == uniprot_identifier:
