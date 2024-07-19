@@ -3,7 +3,7 @@
 <img src="https://github.com/tschmenger/PROTEORIZER/blob/4e16b172e6d920daf4007e048936df43805d1d30/GraphicalAbstract.svg?sanitize=true">
 
 # Please Cite
-When using insights generated with Proteorizer please cite **PUBLICATION**.
+When using insights generated with Proteorizer please cite **"PROTEORIZER: A holistic approach to untangle functional consequences of variants of unknown significance",Torsten Schmenger,Gaurav Diwan,Robert Bruce Russell. https://doi.org/10.1101/2024.07.16.603688.**
 
 # Introduction
 This tool is a spritual successor to the work published in 2022 ```Schmenger et al. "Never-homozygous genetic variants in healthy populations are potential recessive disease candidates" (https://doi.org/10.1038/s41525-022-00322-z)```.
