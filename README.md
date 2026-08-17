@@ -128,4 +128,4 @@ ___
 
 Feedback, questions or error reports should be directed to **torsten.schmenger [ a t ]bioquant.uni-heidelberg.de**.
 
-[Stand-Alone Alignment Annotations (not public yet)](https://github.com/tschmenger/Annotate_Alignments)
+[CHECK OUT my Stand-Alone Alignment Annotations app, CALVI](https://github.com/tschmenger/Annotate_Alignments)
